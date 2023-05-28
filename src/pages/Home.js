@@ -4,10 +4,7 @@ import { db } from "../Firebase.js";
 import { Link} from 'react-router-dom';
 import { useContext, useState } from 'react';
 import { AppContext } from "../App.js";
-import Modal from 'react-modal';
 import { signInWithGitHub } from "../Firebase.js";
-
-Modal.setAppElement('#root');
 
 function Home() {
   const {roomId, setRoomId } = useContext(AppContext);
@@ -89,24 +86,6 @@ function Home() {
           </div>
         </div>
       </div>  
-      <Modal
-            isOpen={showAlert}
-            onRequestClose={() => setShowAlert(false)}
-            className="flex items-center justify-center fixed z-50"
-            overlayClassName="fixed top-4 left-1/3 bg-transparent ml-14"
-          >
-            <div className="bg-yellow-100 p-8 rounded-lg ">
-              <div className='flex flex-row justify-center items-center'>
-              <div className="mb-3 flex items-center text-yellow-800 mr-4">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5 mr-2">
-                  <path fillRule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clipRule="evenodd" />
-                </svg>
-                Please Enter a room ID
-              </div>
-              <button className="px-4 py-2 bg-blue-500 text-white rounded-lg" onClick={() => setShowAlert(false)}>OK</button>
-              </div>
-            </div>
-        </Modal>
     </div>    
   );
 }
