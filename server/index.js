@@ -23,7 +23,7 @@ const io = new Server(server, {
 });
 
 io.on("connection", (socket)=>{
-    console.log(`Connection Establish : ${socket.id})`)
+    // console.log(`Connection Establish : ${socket.id})`)
     socket.on("send_message", (data) => {
         socket.broadcast.emit("received_message", data)
     });

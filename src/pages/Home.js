@@ -31,8 +31,8 @@ function Home() {
     await setDoc(roomRef, { roomId: newroomId }, { merge: true });
     setRoomId(newroomId);
 
-    console.log(newroomId);
-    console.log('Room created successfully!');
+    // console.log(newroomId);
+    // console.log('Room created successfully!');
   };
 
   const handleJoinRoom = async () => {
@@ -54,8 +54,8 @@ function Home() {
       const newroomId = roomDoc.id;
       setRoomId(newroomId);
     
-      console.log('Joined room:', userInput);
-      console.log('Room created successfully!');
+      // console.log('Joined room:', userInput);
+      // console.log('Room created successfully!');
     }
   };
 
