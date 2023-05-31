@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { db } from "../Firebase.js";
 import { useContext } from "react";
 import { AppContext } from "../App.js";
-import { doc, updateDoc, onSnapshot } from "firebase/firestore";
 import io from "socket.io-client";
 import { AiFillCloud, AiFillHtml5 } from "react-icons/ai";
 import { FaCss3Alt } from "react-icons/fa";
@@ -19,8 +17,6 @@ function Editor() {
   const [isHeld, setIsHeld] = useState(false);
 
   const { roomId } = useContext(AppContext);
-
-  const roomRef = roomId !== "" ? doc(db, "Rooms", roomId) : null;
 
   useEffect(() => {
     if (!isHeld) {
@@ -45,20 +41,6 @@ function Editor() {
       }
     });
   }, [socket]);
-
-  useEffect(() => {
-    if (roomRef) {
-      const updateRoomData = async () => {
-        await updateDoc(roomRef, {
-          html: html,
-          css: css,
-          js: js,
-        });
-      };
-
-      updateRoomData();
-    }
-  }, [html, css, js, roomId, roomRef]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {

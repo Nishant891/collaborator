@@ -1,74 +1,77 @@
-import { getFirestore, addDoc, collection, doc, setDoc } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
-import { db } from "../Firebase.js";
 import { Link} from 'react-router-dom';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { AppContext } from "../App.js";
-import { signInWithGitHub } from "../Firebase.js";
+import { signIn, databases, account } from "../AppWrite.js";
 
 function Home() {
   const {roomId, setRoomId } = useContext(AppContext);
   const [userInput, setUserInput] = useState('');
-  const [showAlert, setShowAlert] = useState(false);
+  const [user, setUser] = useState('');
+
+  const getUser = async () => {
+
+    const userData =  (await account) && account.get();
+    userData
+      .then((res) => {
+        setUser(res);
+        const userID = uuidv4();
+        databases.createDocument('6471d0c7a377ea50a9e7', '6471d115416db8eb94fb' ,userID, {email : res.email, roomIDs : []});
+        console.log(res);
+
+      })
+      .catch((error) => {
+        console.log(error)
+      })
+
+  }
 
   const handleCreateRoom = async () => {
-    const userId = uuidv4();
-    const postRef = collection(db, "Rooms");
 
-    const roomDoc = await addDoc(postRef, {
-      userId: userId,
-      html: "",
-      css: "",
-      js: "",
-      roomId: ""
-    });
+    const roomId = uuidv4();
+    console.log(roomId);
+    databases.createDocument('6471d0c7a377ea50a9e7', '6471d37c47aba841fc16',roomId, {html : "", css : "", js : "", roomID : `${roomId}`});
+    setRoomId(roomId);
+    console.log(roomId);
 
-    const newroomId = roomDoc.id;
-    const roomRef = doc(db, "Rooms", newroomId);
-    await setDoc(roomRef, { roomId: newroomId }, { merge: true });
-    setRoomId(newroomId);
-
-    // console.log(newroomId);
-    // console.log('Room created successfully!');
   };
 
   const handleJoinRoom = async () => {
     if(userInput === ''){
-      setShowAlert(true);
+      alert("Please enter a roomID");
     }
     else{
-      const userId = uuidv4();
-      const postRef = collection(db, "Rooms");
-    
-      const roomDoc = await addDoc(postRef, {
-        userId: userId,
-        html: "",
-        css: "",
-        js: "",
-        roomId: userInput
-      });
-    
-      const newroomId = roomDoc.id;
-      setRoomId(newroomId);
-    
-      // console.log('Joined room:', userInput);
-      // console.log('Room created successfully!');
+
+      const roomId = uuidv4();
+      databases.createDocument('6471d0c7a377ea50a9e7', '6471d37c47aba841fc16',roomId, {html : "", css : "", js : "", roomID : `${userInput}`});
+      setRoomId(roomId);
+
     }
   };
 
   const handleUserInputChange = (event) => {
     setUserInput(event.target.value);
-    setShowAlert(false);
   };
+
+  useEffect(() => {
+    getUser();
+  }, []);
   
   return (
     <div className="min-h-screen flex flex-col items-center justify-center">  
       <div className='fixed z-100 top-6 right-20'>
-        <button onClick={signInWithGitHub} className='bg-green-500 px-4 py-3 rounded-lg text-lg'>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"className="h-5 w-5 mr-2 inline-block">
-          <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.43 9.8 8.2 11.37.6.12.82-.26.82-.58v-2.04c-3.34.72-4.04-1.58-4.04-1.58-.54-1.37-1.32-1.74-1.32-1.74-1.08-.74.08-.72.08-.72 1.2.08 1.84 1.24 1.84 1.24 1.08 1.86 2.84 1.32 3.52 1 .1-.78.42-1.32.76-1.62-2.66-.3-5.46-1.34-5.46-5.94 0-1.32.48-2.4 1.28-3.24-.14-.32-.56-1.54.12-3.2 0 0 1-.32 3.3 1.24A11.6 11.6 0 0112 4.06c1.04.02 2.08.14 3.06.42 2.3-1.56 3.3-1.24 3.3-1.24.68 1.66.26 2.88.12 3.2.8.84 1.28 1.92 1.28 3.24 0 4.62-2.8 5.64-5.46 5.92.44.36.82 1.1.82 2.22v3.3c0 .32.2.7.82.58C20.57 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/>
-        </svg>
-          Sign In With GitHub</button>
+        {user == '' ? 
+        <button onClick={signIn} className='bg-green-500 px-4 py-3 rounded-lg text-lg'>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style={{ borderRadius: '50%', backgroundColor: 'black' }} className='inline-block mb-1 mr-2'>
+            <path fill="white" d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.207 11.385.6.113.793-.258.793-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.611-4.042-1.611-.546-1.385-1.333-1.755-1.333-1.755-1.09-.745.083-.73.083-.73 1.204.085 1.839 1.235 1.839 1.235 1.07 1.838 2.806 1.305 3.484.997.108-.772.418-1.305.76-1.605-2.665-.305-5.466-1.332-5.466-5.93 0-1.31.465-2.377 1.236-3.218-.124-.303-.536-1.524.117-3.176 0 0 1.007-.322 3.3 1.23.957-.267 1.98-.399 3-.404 1.02.005 2.043.137 3 .404 2.29-1.552 3.294-1.23 3.294-1.23.656 1.652.244 2.873.12 3.176.77.841 1.234 1.908 1.234 3.218 0 4.61-2.805 5.622-5.475 5.92.43.372.82 1.102.82 2.22 0 1.602-.014 2.888-.014 3.282 0 .319.19.694.8.576C20.565 22.092 24 17.593 24 12.297c0-6.627-5.373-12-12-12z"/>
+          </svg>
+
+          Login with GitHub
+        </button> 
+        : 
+        <button className='bg-red-500 px-4 py-3 rounded-lg text-lg'>
+          Log Out
+        </button>}
       </div>
       <div className='mb-8'>
         <h1 className="text-9xl bg-gradient-to-r from-blue-600 via-green-500 to-indigo-400 text-transparent bg-clip-text">Collaborator</h1>
@@ -82,7 +85,7 @@ function Home() {
             <button className="px-4 py-3 bg-blue-500 text-black text-xl rounded-lg ml-4" onClick={() => {handleJoinRoom()}}>Join a room</button>
           </Link>           
           <div>
-            <input className="px-4 py-2 border border-gray-300 rounded-lg mt-4 w-full outline-none" type="text" value={userInput} onChange={handleUserInputChange} placeholder="Enter room ID" />
+            <input className="px-4 py-2 border border-gray-300 rounded-lg mt-4 w-full outline-none text-white" type="text" value={userInput} onChange={handleUserInputChange} placeholder="Enter room ID" />
           </div>
         </div>
       </div>  
