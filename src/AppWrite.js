@@ -10,8 +10,13 @@ export const databases = new Databases(client);
 
 export const signIn = async () => {
   try{
-    const redirectUrl = 'http://localhost:3000/'; // Replace with your desired redirect URL
-    await account.createOAuth2Session('github', redirectUrl)
+    const redirectUrl = 'http://localhost:3000/'
+    await account.createOAuth2Session('github', redirectUrl).then((a) => {
+      console.log(a);
+    })
+    .catch((error) => {
+      console.log(error);
+    })
   }
   catch(error)  {
       console.log('Error:', error); // Handle any errors

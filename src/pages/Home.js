@@ -17,13 +17,10 @@ function Home() {
         setUser(res);
         const userID = uuidv4();
         databases.createDocument('6471d0c7a377ea50a9e7', '6471d115416db8eb94fb' ,userID, {email : res.email, roomIDs : []});
-        console.log(res);
-
       })
       .catch((error) => {
         console.log(error)
       })
-
   }
 
   const handleCreateRoom = async () => {
@@ -60,7 +57,7 @@ function Home() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center">  
       <div className='fixed z-100 top-6 right-20'>
-        {user == '' ? 
+        {user === '' ? 
         <button onClick={signIn} className='bg-green-500 px-4 py-3 rounded-lg text-lg'>
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style={{ borderRadius: '50%', backgroundColor: 'black' }} className='inline-block mb-1 mr-2'>
             <path fill="white" d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.207 11.385.6.113.793-.258.793-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.611-4.042-1.611-.546-1.385-1.333-1.755-1.333-1.755-1.09-.745.083-.73.083-.73 1.204.085 1.839 1.235 1.839 1.235 1.07 1.838 2.806 1.305 3.484.997.108-.772.418-1.305.76-1.605-2.665-.305-5.466-1.332-5.466-5.93 0-1.31.465-2.377 1.236-3.218-.124-.303-.536-1.524.117-3.176 0 0 1.007-.322 3.3 1.23.957-.267 1.98-.399 3-.404 1.02.005 2.043.137 3 .404 2.29-1.552 3.294-1.23 3.294-1.23.656 1.652.244 2.873.12 3.176.77.841 1.234 1.908 1.234 3.218 0 4.61-2.805 5.622-5.475 5.92.43.372.82 1.102.82 2.22 0 1.602-.014 2.888-.014 3.282 0 .319.19.694.8.576C20.565 22.092 24 17.593 24 12.297c0-6.627-5.373-12-12-12z"/>
