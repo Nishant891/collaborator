@@ -11,6 +11,9 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
+import { account } from "../AppWrite.js";
+import { ID } from "appwrite";
+
 function Copyright(props) {
   return (
     <Typography variant="body2" color="text.secondary" align="center" {...props}>
@@ -28,9 +31,26 @@ function Copyright(props) {
 const defaultTheme = createTheme();
 
 export default function LogIn() {
+
+  const createEmailSession = async (data) => {
+
+    const email = data.get('email');
+    const password = data.get('password');
+
+    try{
+      const response = await account.createEmailSession(email, password);
+      console.log(response);
+    }
+    catch(error){
+      console.log(error);
+    }
+
+  }
+
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
+    createEmailSession(data);
     console.log({
       email: data.get('email'),
       password: data.get('password'),
@@ -53,7 +73,7 @@ export default function LogIn() {
             <LockOutlinedIcon />
           </Avatar>
           <Typography component="h1" variant="h5">
-            Log in
+            Log In
           </Typography>
           <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
             <TextField

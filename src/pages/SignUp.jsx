@@ -11,12 +11,15 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
+import { account } from "../AppWrite.js";
+import { ID } from "appwrite";
+
 function Copyright(props) {
   return (
     <Typography variant="body2" color="text.secondary" align="center" {...props}>
       {'Copyright © '}
       <Link color="inherit" href="https://mui.com/">
-        Your Website
+        Collaborator
       </Link>{' '}
       {new Date().getFullYear()}
       {'.'}
@@ -33,9 +36,27 @@ const theme = createTheme({
 });
 
 export default function SignUp() {
+
+  const createUser = async (data) => {
+
+    const name = data.get('firstName') + " " + data.get('lastName');
+    const email = data.get('email');
+    const password = data.get('password');
+
+    try{
+      const response = await account.create(ID.unique(), email, password, name);
+      console.log(response);
+    }
+    catch(error){
+      console.log(error);
+    }
+
+  }
+
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
+    createUser(data);
     console.log({
       email: data.get('email'),
       password: data.get('password'),

@@ -5,12 +5,13 @@ const client = new Client()
 .setProject("64719ed6c9b56a6c9afe") // Your project ID
 
 export const databases = new Databases(client);
+export const account = new Account(client);
 
 export const signIn = async () => {
 
   try{
     const redirectUrl = 'http://localhost:3000/';
-    const account = new Account(client);
+
     const userAccount = await account.createOAuth2Session('github', redirectUrl);
     userAccount
       .then((res) => {
