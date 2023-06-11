@@ -1,46 +1,61 @@
-import React, { useState, useEffect } from "react";
-import { useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { AppContext } from "../App.js";
-import io from "socket.io-client";
 import { AiFillCloud, AiFillHtml5 } from "react-icons/ai";
 import { FaCss3Alt } from "react-icons/fa";
 import { DiJavascript } from "react-icons/di";
 import { BsGear } from "react-icons/bs";
-const socket = io.connect("http://localhost:5000");
+import { databases } from "../AppWrite.js";
+import { Query } from "appwrite";
 
 function Editor() {
+  let { roomId } = useContext(AppContext);
+
+  if(roomId=='' || roomId==null){
+    const storedRoomId = localStorage.getItem("roomId");
+    roomId = storedRoomId;
+  }
+  else{
+    localStorage.setItem("roomId", roomId);
+  }
+
   const [html, setHtml] = useState("");
   const [css, setCss] = useState("");
   const [js, setJs] = useState("");
   const [srcDoc, setSrcDoc] = useState("");
-  const [forwardedContent, setForwardedContent] = useState([]);
   const [isHeld, setIsHeld] = useState(false);
 
-  const { roomId } = useContext(AppContext);
+  console.log(roomId);
+  //This useEffect executes when the page first loads and gets the value of html,css,js from the database
 
   useEffect(() => {
-    if (!isHeld) {
-      return;
-    }
-    if (isHeld) {
-      document.addEventListener("mousemove", function (event) {
-        var cursorTopPosition = event.clientY;
-        console.log("Cursor Top Position:", cursorTopPosition);
-      });
-    }
-  }, [isHeld]);
-
-  useEffect(() => {
-    socket.on("received_message", (data) => {
-      if (data.lang == "html") {
-        setHtml(data.message);
-      } else if (data.lang == "css") {
-        setCss(data.message);
-      } else if (data.lang == "js") {
-        setJs(data.message);
+    async function fetchData (){
+      try{
+        const contents = await databases.listDocuments("6471d0c7a377ea50a9e7","6471d37c47aba841fc16",[
+          Query.equal("roomID", [roomId])]);
+          console.log(contents);
+          setHtml(contents.documents[0].html);
+          setCss(contents.documents[0].css);
+          setJs(contents.documents[0].js);
       }
-    });
-  }, [socket]);
+      catch(error){
+        console.log("Error:",error);
+      }  
+    }
+    fetchData();
+
+    const handlePageReload = () => {
+      fetchData();
+    };
+  
+    window.addEventListener("beforeunload", handlePageReload);
+  
+    return () => {
+      window.removeEventListener("beforeunload", handlePageReload);
+    };
+
+  },[roomId]);
+
+  //This useEffect executes whenever their is a change in html,css,js and refreshes the iframe to render after every 250ms
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -56,47 +71,78 @@ function Editor() {
     return () => clearTimeout(timeout);
   }, [html, css, js]);
 
-  function handleForwardedContent(lang) {
-    if (lang === "html") {
-      setForwardedContent([html, "html"]);
-      if (forwardedContent != "") {
-        socket.emit("send_message", {
-          message: forwardedContent[0],
-          lang: forwardedContent[1],
-        });
-      }
-    } else if (lang === "css") {
-      setForwardedContent([css, "css"]);
-      if (forwardedContent != "") {
-        socket.emit("send_message", {
-          message: forwardedContent[0],
-          lang: forwardedContent[1],
-        });
-      }
-    } else if (lang === "js") {
-      setForwardedContent([js, "js"]);
-      if (forwardedContent != "") {
-        socket.emit("send_message", {
-          message: forwardedContent[0],
-          lang: forwardedContent[1],
-        });
-      }
+  useEffect(() => {
+    if (!isHeld) {
+      return;
     }
+    if (isHeld) {
+      document.addEventListener("mousemove", function (event) {
+        var cursorTopPosition = event.clientY;
+        console.log("Cursor Top Position:", cursorTopPosition);
+      });
+    }
+  }, [isHeld]);
+
+  async function updateData(e,val){
+    e.preventDefault();// Create an empty object to hold the payload data
+    if (val === "html") {
+      try{
+        await databases.updateDocument(
+          "6471d0c7a377ea50a9e7",
+          "6471d37c47aba841fc16",
+          roomId,
+          {html:html}
+        )
+      }
+      catch(error){
+        console.log("Error2 :",error);
+      }  // Assign the HTML value to the payload object
+    } else if (val === "css") {
+      try{
+        await databases.updateDocument(
+          "6471d0c7a377ea50a9e7",
+          "6471d37c47aba841fc16",
+          roomId,
+          {css:css}
+        )
+      }
+      catch(error){
+        console.log("Error2 :",error);
+      }  // Assign the CSS value to the payload object
+    } else if (val === "js") {
+      try{
+        await databases.updateDocument(
+          "6471d0c7a377ea50a9e7",
+          "6471d37c47aba841fc16",
+          roomId,
+          {js:js}
+        )
+      }
+      catch(error){
+        console.log("Error2 :",error);
+      }  // Assign the JS value to the payload object
+    } 
   }
 
   function handleHTML(event) {
+    event.preventDefault();
     const newHtml = event.target.value;
     setHtml(newHtml);
+    updateData(event,"html");
   }
 
   function handleCSS(event) {
+    event.preventDefault();
     const newCss = event.target.value;
     setCss(newCss);
+    updateData(event,"css");
   }
 
   function handleJS(event) {
+    event.preventDefault();
     const newJs = event.target.value;
     setJs(newJs);
+    updateData(event,"js");
   }
 
   const handleExpand = () => {
