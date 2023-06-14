@@ -10,9 +10,11 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { useNavigate } from 'react-router-dom';
+import { AppContext } from "../App.js";
+import { useContext } from 'react';
 
 import { account } from "../AppWrite.js";
-import { ID } from "appwrite";
 
 function Copyright(props) {
   return (
@@ -32,6 +34,10 @@ const defaultTheme = createTheme();
 
 export default function LogIn() {
 
+  const navigate = useNavigate();
+
+  const { setUser } = useContext(AppContext);
+
   const createEmailSession = async (data) => {
 
     const email = data.get('email');
@@ -39,7 +45,9 @@ export default function LogIn() {
 
     try{
       const response = await account.createEmailSession(email, password);
-      console.log(response);
+      setUser(true);
+      navigate('/');
+
     }
     catch(error){
       console.log(error);
@@ -51,10 +59,6 @@ export default function LogIn() {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     createEmailSession(data);
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
   };
 
   return (
