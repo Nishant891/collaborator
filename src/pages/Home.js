@@ -1,24 +1,41 @@
 import { useContext, useEffect, useState} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from "../App.js";
-import { databases} from "../AppWrite.js";
+import { databases, account} from "../AppWrite.js";
 import { ID } from "appwrite";
 
 function Home() {
   const { setRoomId } = useContext(AppContext);
   const [userInput, setUserInput] = useState('');
-  const [user, setUser] = useState('');
+  const { user, setUser } = useContext(AppContext);
   const navigate = useNavigate();
+
+  useEffect(()=>{
+    async function checkUser(){
+      try{
+        const currentUser = await account.get();
+        if(currentUser.$id != ''){
+          setUser(true)
+        }
+      }
+      catch(error){
+        
+      }
+    }
+    checkUser();
+  })
 
   const handleCreateRoom = async () => {
 
-    const documentID  = await databases.createDocument('6471d0c7a377ea50a9e7', '6471d37c47aba841fc16',ID.unique(), {html : "", css : "", js : "", roomID : ""});
-    console.log(documentID.$id);
-    databases.updateDocument(
+    const data = await account.get();
+    const userId = data.$id;
+    localStorage.setItem('userId', userId);
+    const documentID  = await databases.createDocument('6471d0c7a377ea50a9e7', '6471d37c47aba841fc16',ID.unique(), {html : "", css : "", js : "", roomID : "", userIds: [] });
+    await databases.updateDocument(
       "6471d0c7a377ea50a9e7",
       "6471d37c47aba841fc16",
       documentID.$id,
-      {roomID : documentID.$id}// Pass the payload data to the updateDocument method
+      {roomID : documentID.$id, userIds: [userId]}// Pass the payload data to the updateDocument method
     );
     setRoomId(documentID.$id);
     navigate("/editor?roomID=" + documentID.$id);
@@ -26,16 +43,48 @@ function Home() {
   };
 
   const handleJoinRoom = async () => {
-    if(userInput === ''){
 
-      alert("Please enter a roomID");
-
+    if (userInput === '') {
+      alert('Please enter a roomID');
+    } 
+    
+    else {
+      const regex = /^[a-zA-Z0-9]{20}$/;
+      if (!regex.test(userInput)) {
+        alert('Invalid roomID.');
+      } 
+      else {
+        const data = await account.get();
+        const userId = data.$id;
+        localStorage.setItem('userId', userId);
+        await setRoomId(userInput);
+        const doc = await databases.getDocument(
+          "6471d0c7a377ea50a9e7",
+          "6471d37c47aba841fc16",
+          userInput
+          // Pass the payload data to the updateDocument method
+        );
+        const userIds = doc.userIds;
+        await databases.updateDocument(
+          "6471d0c7a377ea50a9e7",
+          "6471d37c47aba841fc16",
+          userInput,
+          {userIds: [...userIds,userId]}// Pass the payload data to the updateDocument method
+        );
+        navigate("/editor?roomID=" + userInput);
+      }
     }
-    else{
 
-      setRoomId(userInput);
-      navigate("/editor?roomID=" + userInput);
+  };
 
+  const handleLogout = async () => {
+    try {
+      const data = await account.get();
+      const userId = data.$id;
+      await account.deleteSessions(userId);
+      setUser(false);
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -46,7 +95,7 @@ function Home() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-black">  
       <div className='fixed z-100 top-6 right-20'>
-        {user === '' ? 
+        {user === false ? 
         <div>
           <button 
             onClick={() => {
@@ -64,10 +113,11 @@ function Home() {
           >
             LogIn
           </button> 
-        </div>
-        
+        </div>       
         : 
-        <button className='bg-red-500 px-4 py-3 rounded-lg text-lg'>
+        <button 
+          onClick={handleLogout}   
+          className='bg-red-500 px-4 py-3 rounded-lg text-lg'>
           Log Out
         </button>}
       </div>

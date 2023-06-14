@@ -10,9 +10,10 @@ export const AppContext = createContext();
 
 function App() {
   const [roomId, setRoomId] = useState('');
+  const [user, setUser] = useState(false);
   return (
     <div className="App">
-      <AppContext.Provider value={{ roomId, setRoomId }}>
+      <AppContext.Provider value={{ roomId, setRoomId, user, setUser }}>
         <Router>
             <Routes>
               <Route path="/" element={<Home/>}/>

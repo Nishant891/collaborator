@@ -10,6 +10,9 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { AppContext } from "../App.js";
+import { useNavigate } from 'react-router-dom';
+import { useContext } from 'react';
 
 import { account } from "../AppWrite.js";
 import { ID } from "appwrite";
@@ -37,6 +40,10 @@ const theme = createTheme({
 
 export default function SignUp() {
 
+  const navigate = useNavigate();
+
+  const { setUser } = useContext(AppContext);
+
   const createUser = async (data) => {
 
     const name = data.get('firstName') + " " + data.get('lastName');
@@ -45,7 +52,9 @@ export default function SignUp() {
 
     try{
       const response = await account.create(ID.unique(), email, password, name);
-      console.log(response);
+      const session = await account.createEmailSession(email, password);
+      setUser(true);
+      navigate('/')
     }
     catch(error){
       console.log(error);
@@ -57,10 +66,6 @@ export default function SignUp() {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     createUser(data);
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
   };
 
   return (
